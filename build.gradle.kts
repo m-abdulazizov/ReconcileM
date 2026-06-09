@@ -1,27 +1,29 @@
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.tasks.testing.Test
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+
 plugins {
-    java
-    `java-library`
+    base
     id("org.springframework.boot") version "3.5.10" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
 }
 
-group = "io.github.m-abdulazizov"
+group = "io.github.mabdulazizov"
 version = "0.1.0-SNAPSHOT"
 
 allprojects {
-    group = rootProject.group
-    version = rootProject.version
-
     repositories {
         mavenCentral()
     }
 }
 
 subprojects {
-    apply(plugin = "java")
+    group = rootProject.group
+    version = rootProject.version
+
     apply(plugin = "java-library")
 
-    java {
+    configure<JavaPluginExtension> {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(21))
         }
@@ -30,12 +32,12 @@ subprojects {
         withJavadocJar()
     }
 
-    tasks.withType<Test> {
+    tasks.withType<Test>().configureEach {
         useJUnitPlatform()
     }
 
     dependencies {
-        testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
-        testImplementation("org.assertj:assertj-core:3.26.3")
+        add("testImplementation", "org.junit.jupiter:junit-jupiter:5.11.4")
+        add("testImplementation", "org.assertj:assertj-core:3.26.3")
     }
 }
