@@ -8,7 +8,7 @@ public record MatchScore(
         String explanation
 ){
     public MatchScore{
-        Object.requireNonNull(ruleName, "Rule Name must not be null");
+        Objects.requireNonNull(ruleName, "Rule Name must not be null");
 
         if (score < 0){
             throw new IllegalArgumentException("Match score must not be negative");

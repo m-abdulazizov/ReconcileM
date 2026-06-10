@@ -11,12 +11,6 @@ plugins {
 group = "io.github.mabdulazizov"
 version = "0.1.0-SNAPSHOT"
 
-allprojects {
-    repositories {
-        mavenCentral()
-    }
-}
-
 subprojects {
     group = rootProject.group
     version = rootProject.version
@@ -39,5 +33,6 @@ subprojects {
     dependencies {
         add("testImplementation", "org.junit.jupiter:junit-jupiter:5.11.4")
         add("testImplementation", "org.assertj:assertj-core:3.26.3")
+        add("testRuntimeOnly", "org.junit.platform:junit-platform-launcher:1.11.4")
     }
 }
