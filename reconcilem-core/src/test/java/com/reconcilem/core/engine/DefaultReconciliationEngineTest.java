@@ -169,4 +169,67 @@ class DefaultReconciliationEngineTest {
         assertThat(result.matched()).hasSize(1);
         assertThat(result.matched().getFirst().totalScore()).isGreaterThanOrEqualTo(80);
     }
+
+
+    @Test
+    void shouldPreventSameTargetFromBeingMatchedTwice() {
+        ReconciliationRecord firstBankTransaction = new ReconciliationRecord(
+                "BANK_TX_4001",
+                "bank",
+                LocalDate.of(2026, 6, 1),
+                new BigDecimal("1000000.00"),
+                "UZS",
+                "ACME LLC",
+                "INV-889",
+                Map.of()
+        );
+
+        ReconciliationRecord secondBankTransaction = new ReconciliationRecord(
+                "BANK_TX_4002",
+                "bank",
+                LocalDate.of(2026, 6, 1),
+                new BigDecimal("1000000.00"),
+                "UZS",
+                "ACME LLC",
+                "INV-889",
+                Map.of()
+        );
+
+        ReconciliationRecord invoice = new ReconciliationRecord(
+                "INV_889",
+                "invoice-system",
+                LocalDate.of(2026, 6, 1),
+                new BigDecimal("1000000.00"),
+                "UZS",
+                "ACME LIMITED",
+                "INV-889",
+                Map.of()
+        );
+
+        ReconciliationJob job = new ReconciliationJob(
+                "BANK_TO_INVOICE_DUPLICATE_CHECK",
+                "bank",
+                "invoice-system",
+                List.of(
+                        new AmountExactMatchRule(),
+                        new CurrencyExactMatchRule(),
+                        new DateToleranceRule(),
+                        new ReferenceExactMatchRule(),
+                        new CounterpartyContainsRule()
+                ),
+                new ReconciliationThresholds(80, 50)
+        );
+
+        ReconciliationResult result = engine.reconcile(
+                List.of(firstBankTransaction, secondBankTransaction),
+                List.of(invoice),
+                job
+        );
+
+        assertThat(result.matched()).hasSize(1);
+        assertThat(result.duplicateMatches()).hasSize(1);
+        assertThat(result.duplicateMatches().getFirst().decision()).isEqualTo(MatchDecision.DUPLICATE);
+        assertThat(result.unmatchedSourceRecords()).hasSize(1);
+        assertThat(result.unmatchedTargetRecords()).isEmpty();
+    }
 }

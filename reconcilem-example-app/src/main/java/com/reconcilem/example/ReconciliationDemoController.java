@@ -21,8 +21,19 @@ public class ReconciliationDemoController
 
     @GetMapping("/demo/reconcile")
     public ReconciliationResult demoReconcile() {
-        ReconciliationRecord bankTransaction = new ReconciliationRecord(
+        ReconciliationRecord firstBankTransaction = new ReconciliationRecord(
                 "BANK_TX_1001",
+                "bank",
+                LocalDate.of(2026, 6, 1),
+                new BigDecimal("999000.00"),
+                "UZS",
+                "ACME LLC",
+                "Payment for Invoice INV 889",
+                Map.of()
+        );
+
+        ReconciliationRecord secondBankTransaction = new ReconciliationRecord(
+                "BANK_TX_1002",
                 "bank",
                 LocalDate.of(2026, 6, 1),
                 new BigDecimal("999000.00"),
@@ -58,11 +69,10 @@ public class ReconciliationDemoController
         );
 
         return reconciliationEngine.reconcile(
-                List.of(bankTransaction),
+                List.of(firstBankTransaction, secondBankTransaction),
                 List.of(invoice),
                 job
         );
     }
-
 
 }

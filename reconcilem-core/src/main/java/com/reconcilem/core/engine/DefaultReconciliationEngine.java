@@ -37,30 +37,57 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
 
         List<MatchResult> matched = new ArrayList<>();
         List<MatchResult> possibleMatches = new ArrayList<>();
+        List<MatchResult> duplicateMatches = new ArrayList<>();
+        List<MatchResult> conflictMatches = new ArrayList<>();
         List<ReconciliationRecord> unmatchedSourceRecords = new ArrayList<>();
-        Set<String> candidateTargetIds = new HashSet<>();
+
+        Set<String> consumedTargetIds = new HashSet<>();
 
         for (NormalizedRecord sourceRecord : normalizedSourceRecords) {
-            MatchResult bestResult = findBestMatch(sourceRecord, normalizedTargetRecords, job);
+            MatchResult bestOverallResult = findBestMatch(sourceRecord, normalizedTargetRecords, job);
 
-            if (bestResult == null) {
+            if (bestOverallResult == null || bestOverallResult.decision() == MatchDecision.UNMATCHED) {
                 unmatchedSourceRecords.add(sourceRecord.original());
                 continue;
             }
 
-            if (bestResult.decision() == MatchDecision.MATCHED) {
-                matched.add(bestResult);
-                candidateTargetIds.add(bestResult.targetRecord().id());
-            } else if (bestResult.decision() == MatchDecision.POSSIBLE_MATCH) {
-                possibleMatches.add(bestResult);
-                candidateTargetIds.add(bestResult.targetRecord().id());
+            String targetId = bestOverallResult.targetRecord().id();
+
+            if (consumedTargetIds.contains(targetId)) {
+                duplicateMatches.add(asDuplicate(bestOverallResult));
+                unmatchedSourceRecords.add(sourceRecord.original());
+                continue;
+            }
+
+            MatchResult bestAvailableResult = findBestAvailableMatch(
+                    sourceRecord,
+                    normalizedTargetRecords,
+                    consumedTargetIds,
+                    job
+            );
+
+            if (bestAvailableResult == null || bestAvailableResult.decision() == MatchDecision.UNMATCHED) {
+                unmatchedSourceRecords.add(sourceRecord.original());
+                continue;
+            }
+
+            if (!Objects.equals(bestOverallResult.targetRecord().id(), bestAvailableResult.targetRecord().id())) {
+                conflictMatches.add(asConflict(bestOverallResult));
+            }
+
+            if (bestAvailableResult.decision() == MatchDecision.MATCHED) {
+                matched.add(bestAvailableResult);
+                consumedTargetIds.add(bestAvailableResult.targetRecord().id());
+            } else if (bestAvailableResult.decision() == MatchDecision.POSSIBLE_MATCH) {
+                possibleMatches.add(bestAvailableResult);
+                consumedTargetIds.add(bestAvailableResult.targetRecord().id());
             } else {
                 unmatchedSourceRecords.add(sourceRecord.original());
             }
         }
 
         List<ReconciliationRecord> unmatchedTargetRecords = targetRecords.stream()
-                .filter(target -> !candidateTargetIds.contains(target.id()))
+                .filter(target -> !consumedTargetIds.contains(target.id()))
                 .toList();
 
         ReconciliationSummary summary = new ReconciliationSummary(
@@ -75,6 +102,8 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
         return new ReconciliationResult(
                 matched,
                 possibleMatches,
+                duplicateMatches,
+                conflictMatches,
                 unmatchedSourceRecords,
                 unmatchedTargetRecords,
                 summary
@@ -89,6 +118,29 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
         MatchResult bestResult = null;
 
         for (NormalizedRecord targetRecord : targetRecords) {
+            MatchResult result = compare(sourceRecord, targetRecord, job);
+
+            if (bestResult == null || result.totalScore() > bestResult.totalScore()) {
+                bestResult = result;
+            }
+        }
+
+        return bestResult;
+    }
+
+    private MatchResult findBestAvailableMatch(
+            NormalizedRecord sourceRecord,
+            List<NormalizedRecord> targetRecords,
+            Set<String> consumedTargetIds,
+            ReconciliationJob job
+    ) {
+        MatchResult bestResult = null;
+
+        for (NormalizedRecord targetRecord : targetRecords) {
+            if (consumedTargetIds.contains(targetRecord.original().id())) {
+                continue;
+            }
+
             MatchResult result = compare(sourceRecord, targetRecord, job);
 
             if (bestResult == null || result.totalScore() > bestResult.totalScore()) {
@@ -128,6 +180,26 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
                 totalScore,
                 decision,
                 scores
+        );
+    }
+
+    private MatchResult asDuplicate(MatchResult result) {
+        return new MatchResult(
+                result.sourceRecord(),
+                result.targetRecord(),
+                result.totalScore(),
+                MatchDecision.DUPLICATE,
+                result.scores()
+        );
+    }
+
+    private MatchResult asConflict(MatchResult result) {
+        return new MatchResult(
+                result.sourceRecord(),
+                result.targetRecord(),
+                result.totalScore(),
+                MatchDecision.CONFLICT,
+                result.scores()
         );
     }
 
