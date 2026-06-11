@@ -1,0 +1,4 @@
+id,date,amount,currency,counterparty,reference
+BANK_TX_1001,2006-06-01,999000.00,UZS,ACME LLC,Payment for Invoice INV 889
+BANK_TX_1002,2026-06-01,999000.00,UZS,ACME LLC,Payment for Invoice INV 889
+BANK_TX_1003,2026-06-02,500000.00,UZS,Unknown LLC,Payment for Invoice INV 777

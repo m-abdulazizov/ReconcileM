@@ -1,0 +1,3 @@
+id,date,amount,currency,counterparty,reference
+INV_889,2026-05-30,1000000.00,UZS,ACME Limited,INV-889
+INV_900,2026-06-02,2000000.00,UZS,Globex LLC,INV-900
