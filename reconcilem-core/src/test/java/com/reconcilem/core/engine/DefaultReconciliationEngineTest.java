@@ -75,4 +75,53 @@ class DefaultReconciliationEngineTest {
         assertThat(result.matched().getFirst().decision()).isEqualTo(MatchDecision.MATCHED);
         assertThat(result.matched().getFirst().totalScore()).isGreaterThanOrEqualTo(80);
     }
+
+
+    @Test
+    void shouldMatchRecordsAfterNormalization() {
+        ReconciliationRecord bankTransaction = new ReconciliationRecord(
+                "BANK_TX_2001",
+                "bank",
+                LocalDate.of(2026, 6, 1),
+                new BigDecimal("1000000.00"),
+                " uzs ",
+                "Acme L.L.C.",
+                "inv 889",
+                Map.of()
+        );
+
+        ReconciliationRecord invoice = new ReconciliationRecord(
+                "INV_889",
+                "invoice-system",
+                LocalDate.of(2026, 6, 1),
+                new BigDecimal("1000000.00"),
+                "UZS",
+                "ACME LIMITED",
+                "INV-889",
+                Map.of()
+        );
+
+        ReconciliationJob job = new ReconciliationJob(
+                "BANK_TO_INVOICE",
+                "bank",
+                "invoice-system",
+                List.of(
+                        new AmountExactMatchRule(),
+                        new CurrencyExactMatchRule(),
+                        new DateToleranceRule(),
+                        new ReferenceExactMatchRule(),
+                        new CounterpartyContainsRule()
+                ),
+                new ReconciliationThresholds(80, 50)
+        );
+
+        ReconciliationResult result = engine.reconcile(
+                List.of(bankTransaction),
+                List.of(invoice),
+                job
+        );
+
+        assertThat(result.matched()).hasSize(1);
+        assertThat(result.matched().getFirst().totalScore()).isGreaterThanOrEqualTo(80);
+    }
 }

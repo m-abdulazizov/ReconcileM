@@ -8,6 +8,7 @@ import com.reconcilem.core.model.ReconciliationJob;
 import com.reconcilem.core.model.ReconciliationRecord;
 import com.reconcilem.core.model.ReconciliationResult;
 import com.reconcilem.core.model.ReconciliationSummary;
+import com.reconcilem.core.normalizer.RecordNormalizer;
 import com.reconcilem.core.rule.MatchingRule;
 
 import java.util.ArrayList;
@@ -26,16 +27,24 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
     ) {
         validateInput(sourceRecords, targetRecords, job);
 
+        List<NormalizedRecord> normalizedSourceRecords = sourceRecords.stream()
+                .map(record -> new NormalizedRecord(record, normalize(record, job)))
+                .toList();
+
+        List<NormalizedRecord> normalizedTargetRecords = targetRecords.stream()
+                .map(record -> new NormalizedRecord(record, normalize(record, job)))
+                .toList();
+
         List<MatchResult> matched = new ArrayList<>();
         List<MatchResult> possibleMatches = new ArrayList<>();
         List<ReconciliationRecord> unmatchedSourceRecords = new ArrayList<>();
         Set<String> candidateTargetIds = new HashSet<>();
 
-        for (ReconciliationRecord sourceRecord : sourceRecords) {
-            MatchResult bestResult = findBestMatch(sourceRecord, targetRecords, job);
+        for (NormalizedRecord sourceRecord : normalizedSourceRecords) {
+            MatchResult bestResult = findBestMatch(sourceRecord, normalizedTargetRecords, job);
 
             if (bestResult == null) {
-                unmatchedSourceRecords.add(sourceRecord);
+                unmatchedSourceRecords.add(sourceRecord.original());
                 continue;
             }
 
@@ -46,7 +55,7 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
                 possibleMatches.add(bestResult);
                 candidateTargetIds.add(bestResult.targetRecord().id());
             } else {
-                unmatchedSourceRecords.add(sourceRecord);
+                unmatchedSourceRecords.add(sourceRecord.original());
             }
         }
 
@@ -73,13 +82,13 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
     }
 
     private MatchResult findBestMatch(
-            ReconciliationRecord sourceRecord,
-            List<ReconciliationRecord> targetRecords,
+            NormalizedRecord sourceRecord,
+            List<NormalizedRecord> targetRecords,
             ReconciliationJob job
     ) {
         MatchResult bestResult = null;
 
-        for (ReconciliationRecord targetRecord : targetRecords) {
+        for (NormalizedRecord targetRecord : targetRecords) {
             MatchResult result = compare(sourceRecord, targetRecord, job);
 
             if (bestResult == null || result.totalScore() > bestResult.totalScore()) {
@@ -91,8 +100,8 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
     }
 
     private MatchResult compare(
-            ReconciliationRecord sourceRecord,
-            ReconciliationRecord targetRecord,
+            NormalizedRecord sourceRecord,
+            NormalizedRecord targetRecord,
             ReconciliationJob job
     ) {
         List<MatchScore> scores = new ArrayList<>();
@@ -100,7 +109,7 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
 
         for (MatchingRule rule : job.rules()) {
             try {
-                MatchScore score = rule.evaluate(sourceRecord, targetRecord);
+                MatchScore score = rule.evaluate(sourceRecord.normalized(), targetRecord.normalized());
                 scores.add(score);
                 totalScore += score.score();
             } catch (Exception ex) {
@@ -114,12 +123,22 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
         MatchDecision decision = decide(totalScore, job);
 
         return new MatchResult(
-                sourceRecord,
-                targetRecord,
+                sourceRecord.original(),
+                targetRecord.original(),
                 totalScore,
                 decision,
                 scores
         );
+    }
+
+    private ReconciliationRecord normalize(ReconciliationRecord record, ReconciliationJob job) {
+        ReconciliationRecord normalized = record;
+
+        for (RecordNormalizer normalizer : job.normalizers()) {
+            normalized = normalizer.normalize(normalized);
+        }
+
+        return normalized;
     }
 
     private MatchDecision decide(int totalScore, ReconciliationJob job) {
@@ -142,5 +161,11 @@ public class DefaultReconciliationEngine implements ReconciliationEngine {
         Objects.requireNonNull(sourceRecords, "Source records must not be null");
         Objects.requireNonNull(targetRecords, "Target records must not be null");
         Objects.requireNonNull(job, "Reconciliation job must not be null");
+    }
+
+    private record NormalizedRecord(
+            ReconciliationRecord original,
+            ReconciliationRecord normalized
+    ) {
     }
 }

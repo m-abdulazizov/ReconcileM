@@ -1,5 +1,7 @@
 package com.reconcilem.core.model;
 
+import com.reconcilem.core.normalizer.DefaultRecordNormalizer;
+import com.reconcilem.core.normalizer.RecordNormalizer;
 import com.reconcilem.core.rule.MatchingRule;
 
 import java.util.List;
@@ -10,8 +12,26 @@ public record ReconciliationJob(
         String sourceName,
         String targetName,
         List<MatchingRule> rules,
-        ReconciliationThresholds thresholds
+        ReconciliationThresholds thresholds,
+        List<RecordNormalizer> normalizers
 ) {
+
+    public ReconciliationJob(
+            String name,
+            String sourceName,
+            String targetName,
+            List<MatchingRule> rules,
+            ReconciliationThresholds thresholds
+    ) {
+        this(
+                name,
+                sourceName,
+                targetName,
+                rules,
+                thresholds,
+                List.of(new DefaultRecordNormalizer())
+        );
+    }
 
     public ReconciliationJob {
         Objects.requireNonNull(name, "Job name must not be null");
@@ -20,6 +40,7 @@ public record ReconciliationJob(
 
         rules = rules == null ? List.of() : List.copyOf(rules);
         thresholds = thresholds == null ? ReconciliationThresholds.defaults() : thresholds;
+        normalizers = normalizers == null ? List.of(new DefaultRecordNormalizer()) : List.copyOf(normalizers);
 
         if (rules.isEmpty()) {
             throw new IllegalArgumentException("Reconciliation job must contain at least one matching rule");
