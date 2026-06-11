@@ -5,11 +5,7 @@ import com.reconcilem.core.model.ReconciliationJob;
 import com.reconcilem.core.model.ReconciliationRecord;
 import com.reconcilem.core.model.ReconciliationResult;
 import com.reconcilem.core.model.ReconciliationThresholds;
-import com.reconcilem.core.rule.AmountExactMatchRule;
-import com.reconcilem.core.rule.CounterpartyContainsRule;
-import com.reconcilem.core.rule.CurrencyExactMatchRule;
-import com.reconcilem.core.rule.DateToleranceRule;
-import com.reconcilem.core.rule.ReferenceExactMatchRule;
+import com.reconcilem.core.rule.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,10 +25,10 @@ public class ReconciliationDemoController
                 "BANK_TX_1001",
                 "bank",
                 LocalDate.of(2026, 6, 1),
-                new BigDecimal("1000000.00"),
+                new BigDecimal("999000.00"),
                 "UZS",
                 "ACME LLC",
-                "INV-889",
+                "Payment for Invoice INV 889",
                 Map.of()
         );
 
@@ -52,10 +48,10 @@ public class ReconciliationDemoController
                 "bank",
                 "invoice-system",
                 List.of(
-                        new AmountExactMatchRule(),
+                        new AmountToleranceRule(new BigDecimal("1000.00"), 40),
                         new CurrencyExactMatchRule(),
                         new DateToleranceRule(),
-                        new ReferenceExactMatchRule(),
+                        new ReferenceContainsRule(),
                         new CounterpartyContainsRule()
                 ),
                 new ReconciliationThresholds(80, 50)
@@ -67,4 +63,6 @@ public class ReconciliationDemoController
                 job
         );
     }
+
+
 }
