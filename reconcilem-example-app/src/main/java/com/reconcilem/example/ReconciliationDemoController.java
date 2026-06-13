@@ -10,11 +10,15 @@ import com.reconcilem.csv.CsvMapping;
 import com.reconcilem.csv.CsvReconciliationRecordReader;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.reconcilem.csv.CsvReconciliationResultWriter;
+
+import java.nio.file.Path;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ReconciliationDemoController
@@ -84,6 +88,32 @@ public class ReconciliationDemoController
         }
 
         return inputStream;
+    }
+
+
+    @GetMapping("/demo/reconcile-csv/export")
+    public Map<String, Object> demoReconcileCsvExport() {
+        ReconciliationResult result = demoReconcileCsv();
+
+        Path outputDirectory = Path.of("build", "reconcilem-demo-report");
+
+        CsvReconciliationResultWriter writer = new CsvReconciliationResultWriter();
+        writer.write(result, outputDirectory);
+
+        return Map.of(
+                "message", "CSV reconciliation report generated",
+                "outputDirectory", outputDirectory.toAbsolutePath().toString(),
+                "files", List.of(
+                        "matched.csv",
+                        "possible_matches.csv",
+                        "duplicate_matches.csv",
+                        "conflict_matches.csv",
+                        "unmatched_source.csv",
+                        "unmatched_target.csv",
+                        "summary.csv"
+                ),
+                "summary", result.summary()
+        );
     }
 
 }
