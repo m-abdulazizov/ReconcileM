@@ -1,0 +1,15 @@
+server:
+  port: 8081
+
+reconcilem:
+  thresholds:
+    matched-score: 80
+    possible-match-score: 50
+  rules:
+    amount-tolerance: 1000.00
+    amount-score: 40
+    currency-score: 10
+    date-tolerance-days: 3
+    date-score: 15
+    reference-score: 20
+    counterparty-score: 10
