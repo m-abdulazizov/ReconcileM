@@ -228,6 +228,14 @@ http://localhost:8081/demo/reconcile-csv/export
 }
 ```
 
+---
+
+## 10. JDBC Support
+
+ReconcileM can also read records directly from database queries using the `reconcilem-jdbc` module.
+
+See [JDBC Support](jdbc-support.md).
+
 This means:
 
 ```text
