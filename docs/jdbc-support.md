@@ -29,8 +29,10 @@ Main classes:
 
 ```text
 JdbcReconciliationRecordReader
+JdbcReconciliationResultRepository
 JdbcQueryMapping
 JdbcReadException
+JdbcWriteException
 ```
 
 ---
@@ -230,16 +232,61 @@ SQL execution failure
 
 ---
 
-## 9. Current limitations
+## 9. Persist reconciliation results
 
-Current JDBC support only reads records.
+The JDBC module can also persist reconciliation output.
 
-It does not yet persist reconciliation results.
+Create the default tables:
 
-Result persistence will be added later with tables such as:
+```java
+jdbcResultRepository.createSchema();
+```
+
+Save a result:
+
+```java
+String runId = jdbcResultRepository.save(
+        "BANK_DB_TO_INVOICE_DB",
+        result
+);
+```
+
+Default tables:
 
 ```text
 reconcilem_job_run
 reconcilem_match_result
 reconcilem_unmatched_record
+```
+
+Persisted data includes:
+
+```text
+job name
+run timestamp
+summary counts
+matched / possible / duplicate / conflict match rows
+unmatched source and target records
+rule score details
+```
+
+JDBC write errors are wrapped in:
+
+```text
+JdbcWriteException
+```
+
+---
+
+## 10. Current limitations
+
+Current JDBC persistence stores result rows in a generic schema.
+
+It does not yet provide:
+
+```text
+custom table names
+JSON serialization for attributes and score details
+query APIs for reading saved runs back into domain objects
+database-specific migration scripts
 ```

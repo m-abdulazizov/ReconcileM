@@ -4,6 +4,7 @@ import com.reconcilem.core.engine.DefaultReconciliationEngine;
 import com.reconcilem.core.engine.ReconciliationEngine;
 import com.reconcilem.csv.CsvReconciliationRecordReader;
 import com.reconcilem.csv.CsvReconciliationResultWriter;
+import com.reconcilem.jdbc.JdbcReconciliationResultRepository;
 import com.reconcilem.jdbc.JdbcReconciliationRecordReader;
 import com.reconcilem.spring.factory.ReconcileMJobFactory;
 import com.reconcilem.spring.properties.ReconcileMProperties;
@@ -48,5 +49,12 @@ public class ReconcileMAutoConfiguration {
     @ConditionalOnMissingBean
     public JdbcReconciliationRecordReader jdbcReconciliationRecordReader(DataSource dataSource) {
         return new JdbcReconciliationRecordReader(dataSource);
+    }
+
+    @Bean
+    @ConditionalOnBean(DataSource.class)
+    @ConditionalOnMissingBean
+    public JdbcReconciliationResultRepository jdbcReconciliationResultRepository(DataSource dataSource) {
+        return new JdbcReconciliationResultRepository(dataSource);
     }
 }

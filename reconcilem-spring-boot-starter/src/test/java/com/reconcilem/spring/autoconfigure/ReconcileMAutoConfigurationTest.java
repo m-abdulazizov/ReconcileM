@@ -3,6 +3,7 @@ package com.reconcilem.spring.autoconfigure;
 import com.reconcilem.core.engine.ReconciliationEngine;
 import com.reconcilem.csv.CsvReconciliationRecordReader;
 import com.reconcilem.csv.CsvReconciliationResultWriter;
+import com.reconcilem.jdbc.JdbcReconciliationResultRepository;
 import com.reconcilem.jdbc.JdbcReconciliationRecordReader;
 import com.reconcilem.spring.factory.ReconcileMJobFactory;
 import org.junit.jupiter.api.Test;
@@ -27,15 +28,17 @@ class ReconcileMAutoConfigurationTest {
             assertThat(context).hasSingleBean(CsvReconciliationResultWriter.class);
             assertThat(context).hasSingleBean(ReconcileMJobFactory.class);
             assertThat(context).doesNotHaveBean(JdbcReconciliationRecordReader.class);
+            assertThat(context).doesNotHaveBean(JdbcReconciliationResultRepository.class);
         });
     }
 
     @Test
-    void shouldCreateJdbcReaderWhenDataSourceExists() {
+    void shouldCreateJdbcBeansWhenDataSourceExists() {
         contextRunner
                 .withBean(DataSource.class, this::dataSource)
                 .run(context -> {
                     assertThat(context).hasSingleBean(JdbcReconciliationRecordReader.class);
+                    assertThat(context).hasSingleBean(JdbcReconciliationResultRepository.class);
                 });
     }
 
