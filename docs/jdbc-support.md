@@ -164,6 +164,7 @@ If a Spring Boot application has a `DataSource` bean, ReconcileM auto-configures
 
 ```java
 JdbcReconciliationRecordReader
+JdbcReconciliationResultRepository
 ```
 
 So developers can inject it:
@@ -173,9 +174,14 @@ So developers can inject it:
 public class DatabaseReconciliationService {
 
     private final JdbcReconciliationRecordReader jdbcReader;
+    private final JdbcReconciliationResultRepository jdbcResultRepository;
 
-    public DatabaseReconciliationService(JdbcReconciliationRecordReader jdbcReader) {
+    public DatabaseReconciliationService(
+            JdbcReconciliationRecordReader jdbcReader,
+            JdbcReconciliationResultRepository jdbcResultRepository
+    ) {
         this.jdbcReader = jdbcReader;
+        this.jdbcResultRepository = jdbcResultRepository;
     }
 }
 ```

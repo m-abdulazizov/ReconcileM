@@ -104,6 +104,18 @@ Export CSV report:
 http://localhost:8081/demo/reconcile-csv/export
 ```
 
+Run the JDBC demo:
+
+```text
+http://localhost:8081/demo/reconcile-jdbc
+```
+
+Persist the JDBC reconciliation result:
+
+```text
+http://localhost:8081/demo/reconcile-jdbc/persist
+```
+
 ## Technical Highlights
 
 This project demonstrates:
@@ -119,3 +131,7 @@ This project demonstrates:
 ## Current Status
 
 ReconcileM is in active development as a portfolio-quality framework project. The core, CSV, JDBC, Spring Boot starter, example app, and test utilities are implemented. Future work includes publishing setup, CI, broader integration tests, and advanced matching modes such as one-to-many reconciliation.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

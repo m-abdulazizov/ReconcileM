@@ -220,6 +220,18 @@ Export report:
 http://localhost:8081/demo/reconcile-csv/export
 ```
 
+JDBC demo:
+
+```text
+http://localhost:8081/demo/reconcile-jdbc
+```
+
+Persist JDBC demo result:
+
+```text
+http://localhost:8081/demo/reconcile-jdbc/persist
+```
+
 ---
 
 ## 9. Example output summary
