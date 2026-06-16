@@ -18,7 +18,7 @@ ReconcileM is organized as a reusable Java financial reconciliation framework. T
 | `reconcilem-jdbc` | JDBC record reading and reconciliation result persistence |
 | `reconcilem-spring-boot-starter` | Spring Boot auto-configuration and default framework beans |
 | `reconcilem-example-app` | Runnable demo application that shows CSV reconciliation |
-| `reconcilem-test` | Reserved for future testing utilities |
+| `reconcilem-test` | Test fixtures and assertions for framework users |
 
 ## Core Flow
 
@@ -93,5 +93,4 @@ The starter creates default beans for the engine, CSV reader/writer, job factory
 - Matching is intentionally simple and in-memory for the first versions.
 - JDBC persistence uses a generic default schema.
 - The framework does not yet include one-to-many or many-to-one matching.
-- `reconcilem-test` is reserved but not implemented yet.
 - Public API stability and publishing configuration are still future release work.

@@ -68,6 +68,13 @@ CsvReconciliationResultWriter
 ReconcileMJobFactory
 ```
 
+If the application has a `DataSource`, the starter also creates:
+
+```java
+JdbcReconciliationRecordReader
+JdbcReconciliationResultRepository
+```
+
 Example:
 
 ```java
@@ -228,15 +235,7 @@ http://localhost:8081/demo/reconcile-csv/export
 }
 ```
 
----
-
-## 10. JDBC Support
-
-ReconcileM can also read records directly from database queries using the `reconcilem-jdbc` module.
-
-See [JDBC Support](jdbc-support.md).
-
-This means:
+The summary means:
 
 ```text
 3 source records were loaded
@@ -245,3 +244,11 @@ This means:
 2 source records stayed unmatched
 1 target record stayed unmatched
 ```
+
+---
+
+## 10. JDBC Support
+
+ReconcileM can also read records directly from database queries using the `reconcilem-jdbc` module.
+
+See [JDBC Support](jdbc-support.md).
