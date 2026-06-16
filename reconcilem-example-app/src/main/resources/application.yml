@@ -1,6 +1,13 @@
 server:
   port: 8081
 
+spring:
+  datasource:
+    url: jdbc:h2:mem:reconcilem_example;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: root
+    password:
+    driver-class-name: org.h2.Driver
+
 reconcilem:
   thresholds:
     matched-score: 80
