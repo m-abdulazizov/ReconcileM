@@ -9,6 +9,7 @@ import com.reconcilem.jdbc.JdbcReconciliationRecordReader;
 import com.reconcilem.spring.factory.ReconcileMJobFactory;
 import com.reconcilem.spring.properties.ReconcileMProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,7 +17,7 @@ import org.springframework.context.annotation.Bean;
 
 import javax.sql.DataSource;
 
-@AutoConfiguration
+@AutoConfiguration(after = DataSourceAutoConfiguration.class)
 @EnableConfigurationProperties(ReconcileMProperties.class)
 public class ReconcileMAutoConfiguration {
 

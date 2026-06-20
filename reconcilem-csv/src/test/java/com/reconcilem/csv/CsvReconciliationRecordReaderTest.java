@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CsvReconciliationRecordReaderTest {
 
@@ -46,5 +47,51 @@ class CsvReconciliationRecordReaderTest {
         assertThat(record.currency()).isEqualTo("UZS");
         assertThat(record.counterpartyName()).isEqualTo("ACME LLC");
         assertThat(record.reference()).isEqualTo("INV-1");
+    }
+
+    @Test
+    void shouldFailWhenRequiredColumnIsMissing() {
+        String csv = """
+                id,date,currency,counterparty,reference
+                BANK_TX_1,2026-06-01,UZS,ACME LLC,INV-1
+                """;
+
+        CsvMapping mapping = mapping();
+
+        assertThatThrownBy(() -> reader.read(
+                new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)),
+                mapping
+        ))
+                .isInstanceOf(CsvReadException.class)
+                .hasMessageContaining("Required CSV column not found: amount");
+    }
+
+    @Test
+    void shouldFailWhenAmountIsInvalid() {
+        String csv = """
+                id,date,amount,currency,counterparty,reference
+                BANK_TX_1,2026-06-01,not-a-number,UZS,ACME LLC,INV-1
+                """;
+
+        CsvMapping mapping = mapping();
+
+        assertThatThrownBy(() -> reader.read(
+                new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)),
+                mapping
+        ))
+                .isInstanceOf(CsvReadException.class)
+                .hasMessageContaining("Invalid amount value: not-a-number");
+    }
+
+    private CsvMapping mapping() {
+        return CsvMapping.builder()
+                .sourceName("bank")
+                .idColumn("id")
+                .transactionDateColumn("date")
+                .amountColumn("amount")
+                .currencyColumn("currency")
+                .counterpartyNameColumn("counterparty")
+                .referenceColumn("reference")
+                .build();
     }
 }

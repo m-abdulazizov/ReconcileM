@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JdbcReconciliationRecordReaderTest {
 
@@ -101,5 +102,35 @@ class JdbcReconciliationRecordReaderTest {
         assertThat(record.counterpartyName()).isEqualTo("ACME LLC");
         assertThat(record.reference()).isEqualTo("INV-1");
         assertThat(record.attributes()).containsEntry("bank_account", "UZ123");
+    }
+
+    @Test
+    void shouldFailWhenSqlIsBlank() {
+        assertThatThrownBy(() -> reader.read(" ", mapping()))
+                .isInstanceOf(JdbcReadException.class)
+                .hasMessageContaining("SQL query must not be blank");
+    }
+
+    @Test
+    void shouldFailWhenRequiredColumnIsMissing() {
+        assertThatThrownBy(() -> reader.read(
+                "select id, transaction_date, currency, counterparty_name, reference from bank_transactions",
+                mapping()
+        ))
+                .isInstanceOf(JdbcReadException.class)
+                .hasRootCauseMessage("Required JDBC column not found or value is null: amount");
+    }
+
+    private JdbcQueryMapping mapping() {
+        return JdbcQueryMapping.builder()
+                .sourceName("bank")
+                .idColumn("id")
+                .transactionDateColumn("transaction_date")
+                .amountColumn("amount")
+                .currencyColumn("currency")
+                .counterpartyNameColumn("counterparty_name")
+                .referenceColumn("reference")
+                .attributeColumn("bank_account")
+                .build();
     }
 }

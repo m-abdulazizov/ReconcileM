@@ -1,6 +1,8 @@
 package com.reconcilem.spring.autoconfigure;
 
 import com.reconcilem.core.engine.ReconciliationEngine;
+import com.reconcilem.core.model.ReconciliationResult;
+import com.reconcilem.core.model.ReconciliationSummary;
 import com.reconcilem.csv.CsvReconciliationRecordReader;
 import com.reconcilem.csv.CsvReconciliationResultWriter;
 import com.reconcilem.jdbc.JdbcReconciliationResultRepository;
@@ -12,6 +14,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,6 +44,23 @@ class ReconcileMAutoConfigurationTest {
                     assertThat(context).hasSingleBean(JdbcReconciliationRecordReader.class);
                     assertThat(context).hasSingleBean(JdbcReconciliationResultRepository.class);
                 });
+    }
+
+    @Test
+    void shouldRespectCustomReconciliationEngineBean() {
+        ReconciliationEngine customEngine = (sourceRecords, targetRecords, job) -> new ReconciliationResult(
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                new ReconciliationSummary(0, 0, 0, 0, 0, 0)
+        );
+
+        contextRunner
+                .withBean(ReconciliationEngine.class, () -> customEngine)
+                .run(context -> assertThat(context.getBean(ReconciliationEngine.class)).isSameAs(customEngine));
     }
 
     @Test

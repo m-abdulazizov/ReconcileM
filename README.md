@@ -1,5 +1,7 @@
 # ReconcileM
 
+[![CI](https://github.com/mabdulazizov/ReconcileM/actions/workflows/ci.yml/badge.svg)](https://github.com/mabdulazizov/ReconcileM/actions/workflows/ci.yml)
+
 ReconcileM is a Java financial reconciliation framework for matching records across banks, invoices, payment gateways, refunds, accounting systems, and internal business systems.
 
 It is not a finance application. It provides reusable reconciliation infrastructure: record normalization, rule-based matching, confidence scoring, explainable decisions, CSV/JDBC adapters, Spring Boot integration, and result export/persistence.
@@ -130,8 +132,18 @@ This project demonstrates:
 
 ## Current Status
 
-ReconcileM is in active development as a portfolio-quality framework project. The core, CSV, JDBC, Spring Boot starter, example app, and test utilities are implemented. Future work includes publishing setup, CI, broader integration tests, and advanced matching modes such as one-to-many reconciliation.
+ReconcileM is in active development as a portfolio-quality framework project.
 
-## License
+| Area | Status |
+|---|---|
+| Core engine | Done |
+| CSV support | Done |
+| JDBC support | Done |
+| Spring Boot starter | Done |
+| Example app | Done |
+| Test utilities | Done |
+| CI | Done |
+| Publishing setup | In progress |
+| Advanced matching | Planned |
 
-This project is licensed under the [MIT License](LICENSE).
+See [Roadmap](docs/roadmap.md) and [Changelog](CHANGELOG.md) for release progress.

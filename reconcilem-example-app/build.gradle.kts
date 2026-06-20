@@ -11,5 +11,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
     runtimeOnly("com.h2database:h2")
+    testRuntimeOnly("com.h2database:h2")
 }
